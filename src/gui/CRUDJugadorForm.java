@@ -49,12 +49,31 @@ public class CRUDJugadorForm extends JFrame {
     panelPrincipal.setBackground(new Color(25, 30, 40));
     setContentPane(panelPrincipal);
 
+    JPanel panelNorte = new JPanel(new BorderLayout());
+    panelNorte.setBackground(new Color(25, 30, 40));
+
     // Titulo
     JLabel lblTitulo = new JLabel("  Módulo Oficial de Jugadores", SwingConstants.LEFT);
     lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 18));
     lblTitulo.setForeground(Color.WHITE);
     lblTitulo.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 10));
-    panelPrincipal.add(lblTitulo, BorderLayout.NORTH);
+    panelNorte.add(lblTitulo, BorderLayout.WEST);
+
+    // Controles de Filtro
+    JPanel panelFiltro = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 15));
+    panelFiltro.setOpaque(false);
+    
+    JButton btnFiltro = crearBotonNativo("🔍 Filtro Físico (R.6)", new Color(200, 110, 30));
+    btnFiltro.addActionListener(e -> aplicarFiltro6());
+    
+    JButton btnReset = crearBotonNativo("✖ Quitar Filtros", new Color(80, 80, 80));
+    btnReset.addActionListener(e -> cargarDatos());
+    
+    panelFiltro.add(btnFiltro);
+    panelFiltro.add(btnReset);
+    panelNorte.add(panelFiltro, BorderLayout.EAST);
+
+    panelPrincipal.add(panelNorte, BorderLayout.NORTH);
 
     // Tabla de datos (Se añade columna con el Nombre del Equipo)
     String[] columnas = {"ID", "Nombre", "Apellido", "F. Nacimiento", "Pos", "Peso", "Est", "Valor", "País Selecc.", "ID Eq"};
@@ -145,7 +164,45 @@ public class CRUDJugadorForm extends JFrame {
     return b;
   }
 
-  // --- LOGICA CRUD ---
+  // --- LOGICA CRUD Y FILTROS ---
+  
+  private void aplicarFiltro6() {
+    List<Equipo> eqs = equipoDAO.obtenerTodos();
+    JComboBox<Equipo> cmb = new JComboBox<>(eqs.toArray(new Equipo[0]));
+    JTextField pesoMin=new JTextField("50"), pesoMax=new JTextField("100");
+    JTextField estMin=new JTextField("1.50"), estMax=new JTextField("2.10");
+    
+    Object[] msg = {"Busqueda por Selección:", cmb, " ", "Masa Mínima (kg):", pesoMin, "Masa Máxima (kg):", pesoMax, 
+            " ", "Altura Mínima (m):", estMin, "Altura Máxima (m):", estMax};
+            
+    if (JOptionPane.showConfirmDialog(this, msg, "Filtro Biomédico Preciso", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+      try {
+        Equipo eq = (Equipo) cmb.getSelectedItem();
+        List<Jugador> res = jugadorDAO.filtrarPorFisico(
+            Double.parseDouble(pesoMin.getText().replace(',', '.')), Double.parseDouble(pesoMax.getText().replace(',', '.')),
+            Double.parseDouble(estMin.getText().replace(',', '.')), Double.parseDouble(estMax.getText().replace(',', '.')), eq.getIdEquipo());
+        
+        if (res.isEmpty()) { 
+          JOptionPane.showMessageDialog(this, "Resultados nulos para este equipo dentro de este rango exacto.", "Vacío", JOptionPane.INFORMATION_MESSAGE); 
+          return; 
+        }
+        
+        modeloTabla.setRowCount(0);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        for (Jugador j : res) {
+          modeloTabla.addRow(new Object[]{
+            j.getIdJugador(), j.getNombre(), j.getApellido(),
+            j.getFechaNacimiento() != null ? sdf.format(j.getFechaNacimiento()) : "",
+            j.getPosicion(), j.getPeso(), j.getEstatura(), j.getValorMercado(), 
+            eq.getNombre(), j.getIdEquipo()
+          });
+        }
+        JOptionPane.showMessageDialog(this, "Filtro aplicado con éxito. Viendo " + res.size() + " resultados.", "Filtro Exitoso", JOptionPane.INFORMATION_MESSAGE);
+      } catch (Exception ex) {
+         JOptionPane.showMessageDialog(this, "Excepción analizando valores numéricos.");
+      }
+    }
+  }
 
   /**
    * Extrae a todos los jugadores de la base de datos usando SELECT
