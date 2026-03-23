@@ -76,7 +76,7 @@ public class MainMenu extends JFrame {
                     () -> new CRUDJugadorForm().setVisible(true))); // Llama a la ventana real
 
             content.add(crearBotonModulo("Estadios", "Gestionar estadios y ciudades", new Color(100, 50, 120),
-                    () -> JOptionPane.showMessageDialog(this, "Módulo 'Estadios' en construcción...", "Pronto", JOptionPane.INFORMATION_MESSAGE)));
+                    () -> new CRUDEstadioForm().setVisible(true)));
 
             content.add(crearBotonModulo("Partidos", "Gestionar partidos del mundial", new Color(120, 80, 30),
                     () -> JOptionPane.showMessageDialog(this, "Módulo 'Partidos' en construcción...", "Pronto", JOptionPane.INFORMATION_MESSAGE)));
