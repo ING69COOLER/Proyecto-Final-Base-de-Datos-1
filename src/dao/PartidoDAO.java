@@ -99,6 +99,17 @@ public class PartidoDAO implements GenericDAO<Partido> {
         return result;
     }
 
+    public List<Partido> filtrarPorEstadio(int idEstadio) {
+        List<Partido> lista = new ArrayList<>();
+        String sql = "SELECT * FROM PARTIDO WHERE id_estadio = ? ORDER BY fecha_hora";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idEstadio);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) lista.add(mapear(rs));
+        } catch (SQLException e) { e.printStackTrace(); }
+        return lista;
+    }
+
     public List<Object[]> partidosPorEquipoPorPais() {
         List<Object[]> result = new ArrayList<>();
         String sql = "SELECT e.nombre AS equipo, pa.nombre AS pais, COUNT(*) AS num_partidos " +

@@ -66,6 +66,30 @@ public class CRUDPartidoForm extends JFrame {
     JPanel panelPrincipal = new JPanel(new BorderLayout());
     panelPrincipal.setBackground(new Color(25, 30, 40));
 
+    JPanel panelNorte = new JPanel(new BorderLayout());
+    panelNorte.setBackground(new Color(25, 30, 40));
+    
+    JLabel lblTitulo = new JLabel("  Competicion: Historial de Partidos", SwingConstants.LEFT);
+    lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 18));
+    lblTitulo.setForeground(Color.WHITE);
+    lblTitulo.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 10));
+    panelNorte.add(lblTitulo, BorderLayout.WEST);
+
+    JPanel panelFiltro = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 12));
+    panelFiltro.setOpaque(false);
+    
+    JButton btnFiltro = crearBotonNativo("Filtrar por Estadio", new Color(180, 100, 30));
+    btnFiltro.addActionListener(e -> aplicarFiltroEstadio());
+    
+    JButton btnVerTodos = crearBotonNativo("Ver Todos", new Color(80, 80, 80));
+    btnVerTodos.addActionListener(e -> cargarDatosPartidos());
+    
+    panelFiltro.add(btnFiltro);
+    panelFiltro.add(btnVerTodos);
+    panelNorte.add(panelFiltro, BorderLayout.EAST);
+    
+    panelPrincipal.add(panelNorte, BorderLayout.NORTH);
+
     String[] cols = {"ID Partido", "Fecha/Hora", "Equipo Local", "Equipo Visitante", "Estadio", "Letra Grupo"};
     modeloPar = new DefaultTableModel(cols, 0) { @Override public boolean isCellEditable(int r, int c) { return false; } };
     tablaPar = new JTable(modeloPar);
@@ -198,6 +222,41 @@ public class CRUDPartidoForm extends JFrame {
     p.setIdEstadio(((Estadio)cmbEstadio.getSelectedItem()).getIdEstadio());
     p.setIdGrupo(((Grupo)cmbGrupoP.getSelectedItem()).getIdGrupo());
     return p;
+  }
+
+  private void aplicarFiltroEstadio() {
+    List<Estadio> estadios = estadioDAO.obtenerTodos();
+    if (estadios.isEmpty()) return;
+    JComboBox<Estadio> cmb = new JComboBox<>(estadios.toArray(new Estadio[0]));
+    Object[] msg = {"Seleccione la sede para filtrar unicamente los partidos jugados alli:", cmb};
+    
+    if (JOptionPane.showConfirmDialog(this, msg, "Filtro de Localia", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+      Estadio es = (Estadio) cmb.getSelectedItem();
+      List<Partido> res = partidoDAO.filtrarPorEstadio(es.getIdEstadio());
+      
+      if (res.isEmpty()) {
+        JOptionPane.showMessageDialog(this, "No hay partidos programados en este estadio aun.", "Sin Resultados", JOptionPane.INFORMATION_MESSAGE);
+        return;
+      }
+      
+      modeloPar.setRowCount(0);
+      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+      for (Partido p : res) {
+        Equipo eqL = equipoDAO.obtenerPorId(p.getIdEqLocal());
+        Equipo eqV = equipoDAO.obtenerPorId(p.getIdEqVisit());
+        Grupo gr = grupoDAO.obtenerPorId(p.getIdGrupo());
+
+        modeloPar.addRow(new Object[]{
+          p.getIdPartido(),
+          sdf.format(p.getFechaHora()),
+          (eqL != null ? eqL.getNombre() : "N/A"),
+          (eqV != null ? eqV.getNombre() : "N/A"),
+          es.getNombre(), // Nombre ya lo tenemos del combo
+          (gr != null ? gr.getNombre() : "N/A")
+        });
+      }
+      JOptionPane.showMessageDialog(this, "Se encontraron " + res.size() + " partidos en " + es.getNombre());
+    }
   }
 
   // =========================================================
