@@ -1,0 +1,129 @@
+@startuml ER_Campeonato_Mundial_2026
+!define TABLE(name,desc) class name as "desc" << (T,#FFAAAA) >>
+!define PK(x) <u>x</u>
+!define FK(x) <i>x</i>
+
+hide methods
+hide stereotypes
+
+skinparam class {
+  BackgroundColor #FEFEFE
+  BorderColor #333333
+  ArrowColor #333333
+  FontSize 12
+}
+
+skinparam classFontStyle bold
+
+TABLE(Usuario, "USUARIO") {
+  PK(id_usuario) : NUMBER(10) NOT NULL
+  --
+  nombre_usuario : VARCHAR2(50) UNIQUE NOT NULL
+  contrasena_hash : VARCHAR2(255) NOT NULL
+  tipo_usuario : VARCHAR2(15) NOT NULL
+  fecha_creacion : DATE DEFAULT SYSDATE
+}
+
+TABLE(Bitacora, "BITACORA") {
+  PK(id_registro) : NUMBER(10) NOT NULL
+  --
+  FK(id_usuario) : NUMBER(10) NOT NULL
+  fecha_hora_ingreso : TIMESTAMP NOT NULL
+  fecha_hora_salida : TIMESTAMP
+}
+
+TABLE(Confederacion, "CONFEDERACION") {
+  PK(id_confederacion) : NUMBER(5) NOT NULL
+  --
+  nombre : VARCHAR2(100) NOT NULL
+}
+
+TABLE(Equipo, "EQUIPO") {
+  PK(id_equipo) : NUMBER(5) NOT NULL
+  --
+  nombre : VARCHAR2(100) NOT NULL
+  ranking_fifa : NUMBER(3) NOT NULL
+  FK(id_confederacion) : NUMBER(5) NOT NULL
+  valor_mercado : NUMBER(15,2)
+}
+
+TABLE(DirectorTecnico, "DIRECTORTECNICO") {
+  PK(id_dt) : NUMBER(5) NOT NULL
+  --
+  nombre : VARCHAR2(100) NOT NULL
+  nacionalidad : VARCHAR2(80) NOT NULL
+  fecha_nacimiento : DATE NOT NULL
+  FK(id_equipo) : NUMBER(5) UNIQUE NOT NULL
+}
+
+TABLE(Jugador, "JUGADOR") {
+  PK(id_jugador) : NUMBER(10) NOT NULL
+  --
+  nombre : VARCHAR2(100) NOT NULL
+  apellido : VARCHAR2(100) NOT NULL
+  fecha_nacimiento : DATE NOT NULL
+  posicion : VARCHAR2(30) NOT NULL
+  peso : NUMBER(5,2)
+  estatura : NUMBER(4,2)
+  valor_mercado : NUMBER(15,2)
+  FK(id_equipo) : NUMBER(5) NOT NULL
+}
+
+TABLE(PaisAnfitrion, "PAISANFITRION") {
+  PK(id_pais_anfitrion) : NUMBER(3) NOT NULL
+  --
+  nombre : VARCHAR2(50) NOT NULL
+}
+
+TABLE(Ciudad, "CIUDAD") {
+  PK(id_ciudad) : NUMBER(5) NOT NULL
+  --
+  nombre : VARCHAR2(100) NOT NULL
+  FK(id_pais_anfitrion) : NUMBER(3) NOT NULL
+}
+
+TABLE(Estadio, "ESTADIO") {
+  PK(id_estadio) : NUMBER(5) NOT NULL
+  --
+  nombre : VARCHAR2(150) UNIQUE NOT NULL
+  capacidad : NUMBER(7) NOT NULL
+  FK(id_ciudad) : NUMBER(5) NOT NULL
+}
+
+TABLE(Grupo, "GRUPO") {
+  PK(id_grupo) : NUMBER(3) NOT NULL
+  --
+  nombre_grupo : VARCHAR2(1) NOT NULL
+}
+
+TABLE(EquipoGrupo, "EQUIPO_GRUPO") {
+  PK(id_equipo_grupo) : NUMBER(10) NOT NULL
+  --
+  FK(id_equipo) : NUMBER(5) NOT NULL
+  FK(id_grupo) : NUMBER(3) NOT NULL
+}
+
+TABLE(Partido, "PARTIDO") {
+  PK(id_partido) : NUMBER(10) NOT NULL
+  --
+  FK(id_eq_local) : NUMBER(5) NOT NULL
+  FK(id_eq_visit) : NUMBER(5) NOT NULL
+  fecha_hora : TIMESTAMP NOT NULL
+  FK(id_estadio) : NUMBER(5) NOT NULL
+  FK(id_grupo) : NUMBER(3) NOT NULL
+}
+
+' Relationships
+Usuario "1" -- "0..*" Bitacora : registra >
+Confederacion "1" -- "1..*" Equipo : agrupa >
+Equipo "1" -- "1" DirectorTecnico : dirige >
+Equipo "1" -- "0..*" Jugador : compone >
+PaisAnfitrion "1" -- "1..*" Ciudad : alberga >
+Ciudad "1" -- "1..*" Estadio : contiene >
+Equipo "1..*" -- "1..*" Grupo : participa en >(EquipoGrupo)
+Estadio "1" -- "0..*" Partido : sede de >
+Grupo "1" -- "0..*" Partido : etapa de >
+Equipo "1" -- "0..*" Partido : juega local >(id_eq_local)
+Equipo "1" -- "0..*" Partido : juega visitante >(id_eq_visit)
+
+@enduml

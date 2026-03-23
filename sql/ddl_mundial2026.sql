@@ -1,0 +1,190 @@
+-- ============================================================
+-- DDL SCRIPT - CAMPEONATO MUNDIAL DE FUTBOL 2026
+-- DBMS: Oracle 18c/19c/21c
+-- Universidad del Quindio - Bases de Datos I
+-- ============================================================
+
+-- Limpiar tablas si existen (orden de eliminacion por FK)
+BEGIN
+  EXECUTE IMMEDIATE 'DROP TABLE PARTIDO CASCADE CONSTRAINTS';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE EQUIPO_GRUPO CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE GRUPO CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE ESTADIO CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE CIUDAD CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE PAISANFITRION CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE JUGADOR CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE DIRECTORTECNICO CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE EQUIPO CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE CONFEDERACION CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE BITACORA CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP TABLE USUARIO CASCADE CONSTRAINTS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+
+-- Eliminar secuencias si existen
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_USUARIO'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_BITACORA'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_CONFEDERACION'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_EQUIPO'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_DT'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_JUGADOR'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_PAIS'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_CIUDAD'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_ESTADIO'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_GRUPO'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_EQUIPOGRUPO'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+BEGIN EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_PARTIDO'; EXCEPTION WHEN OTHERS THEN NULL; END;
+/
+
+-- ============================================================
+-- TABLAS
+-- ============================================================
+
+CREATE TABLE USUARIO (
+    id_usuario       NUMBER(10)    GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre_usuario   VARCHAR2(50)  NOT NULL,
+    contrasena_hash  VARCHAR2(255) NOT NULL,
+    tipo_usuario     VARCHAR2(15)  NOT NULL,
+    fecha_creacion   DATE          DEFAULT SYSDATE,
+    CONSTRAINT uk_usuario_nombre  UNIQUE (nombre_usuario),
+    CONSTRAINT chk_tipo_usuario   CHECK (tipo_usuario IN ('Admin', 'Tradicional', 'Esporadico'))
+);
+
+CREATE TABLE BITACORA (
+    id_registro        NUMBER(10)   GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_usuario         NUMBER(10)   NOT NULL,
+    fecha_hora_ingreso TIMESTAMP    NOT NULL,
+    fecha_hora_salida  TIMESTAMP,
+    CONSTRAINT fk_bit_usuario FOREIGN KEY (id_usuario) REFERENCES USUARIO(id_usuario)
+);
+
+CREATE TABLE CONFEDERACION (
+    id_confederacion NUMBER(5)    GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre           VARCHAR2(100) NOT NULL
+);
+
+CREATE TABLE EQUIPO (
+    id_equipo        NUMBER(5)     GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre           VARCHAR2(100) NOT NULL,
+    ranking_fifa     NUMBER(3)     NOT NULL,
+    id_confederacion NUMBER(5)     NOT NULL,
+    valor_mercado    NUMBER(15,2)  DEFAULT 0,
+    CONSTRAINT fk_eq_conf FOREIGN KEY (id_confederacion) REFERENCES CONFEDERACION(id_confederacion),
+    CONSTRAINT chk_ranking CHECK (ranking_fifa > 0)
+);
+
+CREATE TABLE DIRECTORTECNICO (
+    id_dt            NUMBER(5)    GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre           VARCHAR2(100) NOT NULL,
+    nacionalidad     VARCHAR2(80)  NOT NULL,
+    fecha_nacimiento DATE          NOT NULL,
+    id_equipo        NUMBER(5)     NOT NULL,
+    CONSTRAINT fk_dt_equipo FOREIGN KEY (id_equipo) REFERENCES EQUIPO(id_equipo),
+    CONSTRAINT uk_dt_equipo UNIQUE (id_equipo)
+);
+
+CREATE TABLE JUGADOR (
+    id_jugador       NUMBER(10)   GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre           VARCHAR2(100) NOT NULL,
+    apellido         VARCHAR2(100) NOT NULL,
+    fecha_nacimiento DATE          NOT NULL,
+    posicion         VARCHAR2(30)  NOT NULL,
+    peso             NUMBER(5,2),
+    estatura         NUMBER(4,2),
+    valor_mercado    NUMBER(15,2)  DEFAULT 0,
+    id_equipo        NUMBER(5)     NOT NULL,
+    CONSTRAINT fk_jug_equipo FOREIGN KEY (id_equipo) REFERENCES EQUIPO(id_equipo),
+    CONSTRAINT chk_posicion CHECK (posicion IN ('Portero','Defensa','Mediocampista','Delantero'))
+);
+
+CREATE TABLE PAISANFITRION (
+    id_pais_anfitrion NUMBER(3)    GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre            VARCHAR2(50) NOT NULL,
+    CONSTRAINT chk_pais_nombre CHECK (nombre IN ('Mexico','USA','Canada'))
+);
+
+CREATE TABLE CIUDAD (
+    id_ciudad         NUMBER(5)    GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre            VARCHAR2(100) NOT NULL,
+    id_pais_anfitrion NUMBER(3)    NOT NULL,
+    CONSTRAINT fk_ciu_pais FOREIGN KEY (id_pais_anfitrion) REFERENCES PAISANFITRION(id_pais_anfitrion)
+);
+
+CREATE TABLE ESTADIO (
+    id_estadio NUMBER(5)     GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre     VARCHAR2(150) NOT NULL,
+    capacidad  NUMBER(7)     NOT NULL,
+    id_ciudad  NUMBER(5)     NOT NULL,
+    CONSTRAINT fk_est_ciudad FOREIGN KEY (id_ciudad) REFERENCES CIUDAD(id_ciudad),
+    CONSTRAINT uk_estadio_nombre UNIQUE (nombre),
+    CONSTRAINT chk_capacidad CHECK (capacidad > 0)
+);
+
+CREATE TABLE GRUPO (
+    id_grupo    NUMBER(3)   GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre_grupo VARCHAR2(1) NOT NULL,
+    CONSTRAINT uk_grupo_nombre UNIQUE (nombre_grupo),
+    CONSTRAINT chk_grupo_letra CHECK (nombre_grupo IN ('A','B','C','D','E','F','G','H','I','J','K','L'))
+);
+
+CREATE TABLE EQUIPO_GRUPO (
+    id_equipo_grupo NUMBER(10) GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_equipo       NUMBER(5)  NOT NULL,
+    id_grupo        NUMBER(3)  NOT NULL,
+    CONSTRAINT fk_eg_equipo FOREIGN KEY (id_equipo) REFERENCES EQUIPO(id_equipo),
+    CONSTRAINT fk_eg_grupo  FOREIGN KEY (id_grupo)  REFERENCES GRUPO(id_grupo),
+    CONSTRAINT uk_eq_grupo  UNIQUE (id_equipo, id_grupo)
+);
+
+CREATE TABLE PARTIDO (
+    id_partido  NUMBER(10)  GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_eq_local NUMBER(5)   NOT NULL,
+    id_eq_visit NUMBER(5)   NOT NULL,
+    fecha_hora  TIMESTAMP   NOT NULL,
+    id_estadio  NUMBER(5)   NOT NULL,
+    id_grupo    NUMBER(3)   NOT NULL,
+    CONSTRAINT fk_par_local   FOREIGN KEY (id_eq_local) REFERENCES EQUIPO(id_equipo),
+    CONSTRAINT fk_par_visit   FOREIGN KEY (id_eq_visit) REFERENCES EQUIPO(id_equipo),
+    CONSTRAINT fk_par_estadio FOREIGN KEY (id_estadio)  REFERENCES ESTADIO(id_estadio),
+    CONSTRAINT fk_par_grupo   FOREIGN KEY (id_grupo)    REFERENCES GRUPO(id_grupo),
+    CONSTRAINT chk_equipos_distintos CHECK (id_eq_local != id_eq_visit)
+);
+
+-- ============================================================
+-- INDICES para performance
+-- ============================================================
+CREATE INDEX idx_jugador_equipo   ON JUGADOR(id_equipo);
+CREATE INDEX idx_jugador_valor    ON JUGADOR(valor_mercado DESC);
+CREATE INDEX idx_equipo_conf      ON EQUIPO(id_confederacion);
+CREATE INDEX idx_partido_estadio  ON PARTIDO(id_estadio);
+CREATE INDEX idx_partido_fechora  ON PARTIDO(fecha_hora);
+CREATE INDEX idx_bitacora_usuario ON BITACORA(id_usuario);
+CREATE INDEX idx_bitacora_fechas  ON BITACORA(fecha_hora_ingreso, fecha_hora_salida);
+
+-- DDL creado exitosamente:
+-- Tablas: USUARIO, BITACORA, CONFEDERACION, EQUIPO,
+--         DIRECTORTECNICO, JUGADOR, PAISANFITRION,
+--         CIUDAD, ESTADIO, GRUPO, EQUIPO_GRUPO, PARTIDO

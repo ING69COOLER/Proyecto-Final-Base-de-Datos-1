@@ -1,0 +1,400 @@
+@startuml Diagrama_Clases_Mundial2026
+!pragma layout smetana
+
+skinparam class {
+  BackgroundColor #1E1E2E
+  BorderColor #7C87FF
+  ArrowColor #A0C0FF
+  FontColor #E0E0FF
+  AttributeFontColor #C0C0E0
+  FontSize 12
+  HeaderBackgroundColor #2E2E5E
+}
+
+skinparam note {
+  BackgroundColor #2A2A4A
+  BorderColor #7C87FF
+  FontColor #E0E0FF
+}
+
+title Diagrama de Clases - Sistema Mundial de Fútbol 2026
+
+' ========================
+' MODEL CLASSES
+' ========================
+
+class Usuario {
+  - idUsuario : int
+  - nombreUsuario : String
+  - contrasenaHash : String
+  - tipoUsuario : String
+  - fechaCreacion : Date
+  + getId() : int
+  + getNombreUsuario() : String
+  + getTipoUsuario() : String
+  + setContrasenaHash(hash : String) : void
+}
+
+class Bitacora {
+  - idRegistro : int
+  - idUsuario : int
+  - fechaHoraIngreso : Timestamp
+  - fechaHoraSalida : Timestamp
+  + getIdRegistro() : int
+  + getIdUsuario() : int
+  + getFechaIngreso() : Timestamp
+  + getFechaSalida() : Timestamp
+}
+
+class Confederacion {
+  - idConfederacion : int
+  - nombre : String
+  + getIdConfederacion() : int
+  + getNombre() : String
+  + setNombre(nombre : String) : void
+}
+
+class Equipo {
+  - idEquipo : int
+  - nombre : String
+  - rankingFifa : int
+  - idConfederacion : int
+  - valorMercado : double
+  + getIdEquipo() : int
+  + getNombre() : String
+  + getRankingFifa() : int
+  + getValorMercado() : double
+}
+
+class DirectorTecnico {
+  - idDt : int
+  - nombre : String
+  - nacionalidad : String
+  - fechaNacimiento : Date
+  - idEquipo : int
+  + getIdDt() : int
+  + getNombre() : String
+  + getNacionalidad() : String
+  + getIdEquipo() : int
+}
+
+class Jugador {
+  - idJugador : int
+  - nombre : String
+  - apellido : String
+  - fechaNacimiento : Date
+  - posicion : String
+  - peso : double
+  - estatura : double
+  - valorMercado : double
+  - idEquipo : int
+  + getIdJugador() : int
+  + getNombreCompleto() : String
+  + getPosicion() : String
+  + getEdad() : int
+  + getValorMercado() : double
+}
+
+class PaisAnfitrion {
+  - idPaisAnfitrion : int
+  - nombre : String
+  + getIdPaisAnfitrion() : int
+  + getNombre() : String
+}
+
+class Ciudad {
+  - idCiudad : int
+  - nombre : String
+  - idPaisAnfitrion : int
+  + getIdCiudad() : int
+  + getNombre() : String
+  + getIdPaisAnfitrion() : int
+}
+
+class Estadio {
+  - idEstadio : int
+  - nombre : String
+  - capacidad : int
+  - idCiudad : int
+  + getIdEstadio() : int
+  + getNombre() : String
+  + getCapacidad() : int
+  + getIdCiudad() : int
+}
+
+class Grupo {
+  - idGrupo : int
+  - nombreGrupo : String
+  + getIdGrupo() : int
+  + getNombreGrupo() : String
+}
+
+class EquipoGrupo {
+  - idEquipoGrupo : int
+  - idEquipo : int
+  - idGrupo : int
+  + getIdEquipoGrupo() : int
+  + getIdEquipo() : int
+  + getIdGrupo() : int
+}
+
+class Partido {
+  - idPartido : int
+  - idEqLocal : int
+  - idEqVisit : int
+  - fechaHora : Timestamp
+  - idEstadio : int
+  - idGrupo : int
+  + getIdPartido() : int
+  + getIdEqLocal() : int
+  + getIdEqVisit() : int
+  + getFechaHora() : Timestamp
+}
+
+' ========================
+' DATABASE CONNECTION
+' ========================
+
+class ConexionOracle {
+  - {static} URL : String
+  - {static} USER : String
+  - {static} PASSWORD : String
+  - {static} instance : ConexionOracle
+  - connection : Connection
+  - ConexionOracle()
+  + {static} getInstance() : ConexionOracle
+  + getConnection() : Connection
+  + closeConnection() : void
+  + testConnection() : boolean
+}
+
+' ========================
+' DAO INTERFACES
+' ========================
+
+interface GenericDAO<T> {
+  + crear(entity : T) : boolean
+  + obtenerPorId(id : int) : T
+  + obtenerTodos() : List<T>
+  + actualizar(entity : T) : boolean
+  + eliminar(id : int) : boolean
+}
+
+' ========================
+' DAO IMPLEMENTATIONS
+' ========================
+
+class UsuarioDAO {
+  - conexion : Connection
+  + crear(usuario : Usuario) : boolean
+  + obtenerPorId(id : int) : Usuario
+  + obtenerTodos() : List<Usuario>
+  + actualizar(usuario : Usuario) : boolean
+  + eliminar(id : int) : boolean
+  + autenticar(nombre : String, password : String) : Usuario
+  + obtenerPorNombre(nombre : String) : Usuario
+}
+
+class BitacoraDAO {
+  - conexion : Connection
+  + registrarIngreso(idUsuario : int) : int
+  + registrarSalida(idRegistro : int) : boolean
+  + obtenerPorRango(inicio : Date, fin : Date) : List<Bitacora>
+  + obtenerTodos() : List<Bitacora>
+  + crear(b : Bitacora) : boolean
+  + obtenerPorId(id : int) : Bitacora
+  + actualizar(b : Bitacora) : boolean
+  + eliminar(id : int) : boolean
+}
+
+class EquipoDAO {
+  - conexion : Connection
+  + crear(equipo : Equipo) : boolean
+  + obtenerPorId(id : int) : Equipo
+  + obtenerTodos() : List<Equipo>
+  + actualizar(equipo : Equipo) : boolean
+  + eliminar(id : int) : boolean
+  + obtenerPorConfederacion(idConf : int) : List<Equipo>
+  + equipoMasCaroPorPais(idPais : int) : Equipo
+}
+
+class JugadorDAO {
+  - conexion : Connection
+  + crear(jugador : Jugador) : boolean
+  + obtenerPorId(id : int) : Jugador
+  + obtenerTodos() : List<Jugador>
+  + actualizar(jugador : Jugador) : boolean
+  + eliminar(id : int) : boolean
+  + jugadoresMenoresDe20(idEquipo : int) : List<Jugador>
+  + jugadorMasCaroPorConfederacion() : List<Object[]>
+  + filtrarPorFisico(peso : double, estatura : double, idEquipo : int) : List<Jugador>
+  + valorTotalPorConfederacion(idConf : int) : double
+}
+
+class PartidoDAO {
+  - conexion : Connection
+  + crear(partido : Partido) : boolean
+  + obtenerPorId(id : int) : Partido
+  + obtenerTodos() : List<Partido>
+  + actualizar(partido : Partido) : boolean
+  + eliminar(id : int) : boolean
+  + obtenerPorEstadio(idEstadio : int) : List<Partido>
+  + partidosPorEquipoPorPais() : List<Object[]>
+}
+
+class ConfederacionDAO {
+  - conexion : Connection
+  + crear(conf : Confederacion) : boolean
+  + obtenerPorId(id : int) : Confederacion
+  + obtenerTodos() : List<Confederacion>
+  + actualizar(conf : Confederacion) : boolean
+  + eliminar(id : int) : boolean
+}
+
+class EstadioDAO {
+  - conexion : Connection
+  + crear(estadio : Estadio) : boolean
+  + obtenerPorId(id : int) : Estadio
+  + obtenerTodos() : List<Estadio>
+  + actualizar(estadio : Estadio) : boolean
+  + eliminar(id : int) : boolean
+}
+
+class DirectorTecnicoDAO {
+  - conexion : Connection
+  + crear(dt : DirectorTecnico) : boolean
+  + obtenerPorId(id : int) : DirectorTecnico
+  + obtenerTodos() : List<DirectorTecnico>
+  + actualizar(dt : DirectorTecnico) : boolean
+  + eliminar(id : int) : boolean
+}
+
+class GrupoDAO {
+  - conexion : Connection
+  + crear(grupo : Grupo) : boolean
+  + obtenerPorId(id : int) : Grupo
+  + obtenerTodos() : List<Grupo>
+  + actualizar(grupo : Grupo) : boolean
+  + eliminar(id : int) : boolean
+}
+
+' ========================
+' SERVICE / SECURITY
+' ========================
+
+class SeguridadService {
+  + {static} hashPassword(password : String) : String
+  + {static} verificarPassword(plain : String, hash : String) : boolean
+  + {static} tienePermisoCRUD(usuario : Usuario) : boolean
+  + {static} tienePermisoSoloLectura(usuario : Usuario) : boolean
+}
+
+class SesionActual {
+  - {static} usuarioLogueado : Usuario
+  - {static} idRegistroBitacora : int
+  + {static} iniciarSesion(u : Usuario, idR : int) : void
+  + {static} cerrarSesion() : void
+  + {static} getUsuario() : Usuario
+  + {static} esAdmin() : boolean
+  + {static} puedeEscribir() : boolean
+}
+
+' ========================
+' GUI FORMS
+' ========================
+
+class LoginForm {
+  - txtUsuario : JTextField
+  - txtPassword : JPasswordField
+  - btnIngresar : JButton
+  - usuarioDAO : UsuarioDAO
+  - bitacoraDAO : BitacoraDAO
+  + inicializar() : void
+  + validarCredenciales() : void
+}
+
+class MainMenu {
+  - lblBienvenida : JLabel
+  - pnlMenu : JPanel
+  + configurarSegunRol(tipo : String) : void
+  + mostrarMenuAdmin() : void
+  + mostrarMenuTradicional() : void
+  + mostrarMenuEsporadico() : void
+}
+
+class CRUDEquipoForm {
+  - tabla : JTable
+  - equipoDAO : EquipoDAO
+  + cargarDatos() : void
+  + guardar() : void
+  + actualizar() : void
+  + eliminar() : void
+}
+
+class ReportesForm {
+  - jugadorDAO : JugadorDAO
+  - equipoDAO : EquipoDAO
+  - partidoDAO : PartidoDAO
+  - bitacoraDAO : BitacoraDAO
+  + reporteJugadorMasCaroPorConf() : void
+  + reportePartidosPorEstadio() : void
+  + reporteEquipoMasCaroPorPais() : void
+  + reporteJugadoresMenoresDe20() : void
+  + reporteBitacoraPorFecha() : void
+  + reporteFiltroFisico() : void
+  + reporteValorTotalPorConf() : void
+  + reportePartidosPorEquipoPais() : void
+}
+
+' ========================
+' RELATIONSHIPS
+' ========================
+
+' DAO implements GenericDAO
+UsuarioDAO ..|> GenericDAO
+BitacoraDAO ..|> GenericDAO
+EquipoDAO ..|> GenericDAO
+JugadorDAO ..|> GenericDAO
+PartidoDAO ..|> GenericDAO
+ConfederacionDAO ..|> GenericDAO
+EstadioDAO ..|> GenericDAO
+DirectorTecnicoDAO ..|> GenericDAO
+GrupoDAO ..|> GenericDAO
+
+' DAOs use connection
+ConexionOracle <.. UsuarioDAO : usa
+ConexionOracle <.. BitacoraDAO : usa
+ConexionOracle <.. EquipoDAO : usa
+ConexionOracle <.. JugadorDAO : usa
+ConexionOracle <.. PartidoDAO : usa
+ConexionOracle <.. ConfederacionDAO : usa
+ConexionOracle <.. EstadioDAO : usa
+ConexionOracle <.. DirectorTecnicoDAO : usa
+ConexionOracle <.. GrupoDAO : usa
+
+' Model relationships
+Bitacora "0..*" --o "1" Usuario
+Equipo "0..*" --o "1" Confederacion
+DirectorTecnico "1" --o "1" Equipo
+Jugador "0..*" --o "1" Equipo
+Ciudad "0..*" --o "1" PaisAnfitrion
+Estadio "0..*" --o "1" Ciudad
+EquipoGrupo "0..*" --o "1" Equipo
+EquipoGrupo "0..*" --o "1" Grupo
+Partido "0..*" --o "1" Estadio
+Partido "0..*" --o "1" Grupo
+
+' Security & Session
+LoginForm --> UsuarioDAO
+LoginForm --> BitacoraDAO
+LoginForm --> SeguridadService
+LoginForm --> SesionActual
+MainMenu --> SesionActual
+CRUDEquipoForm --> EquipoDAO
+CRUDEquipoForm --> SesionActual
+ReportesForm --> JugadorDAO
+ReportesForm --> EquipoDAO
+ReportesForm --> PartidoDAO
+ReportesForm --> BitacoraDAO
+
+@enduml
