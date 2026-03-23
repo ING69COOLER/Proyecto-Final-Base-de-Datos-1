@@ -97,7 +97,7 @@ public class CRUDEquipoForm extends JFrame {
     JButton btnEliminar = crearBotonNativo(" Eliminar Selección", new Color(140, 40, 40));
     btnEliminar.addActionListener(e -> eliminarRegistro());
     
-    JButton btnLimpiar = crearBotonNativo("🧹 Limpiar", new Color(100, 100, 100));
+    JButton btnLimpiar = crearBotonNativo(" Limpiar", new Color(100, 100, 100));
     btnLimpiar.addActionListener(e -> limpiarFormulario());
 
     btnPanel.add(btnCrear);

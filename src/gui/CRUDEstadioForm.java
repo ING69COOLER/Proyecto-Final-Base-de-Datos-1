@@ -100,7 +100,7 @@ public class CRUDEstadioForm extends JFrame {
     btnActualizar.addActionListener(e -> actualizarEst());
     JButton btnEliminar = crearBotonNativo(" Eliminar Instalación", new Color(140, 40, 40));
     btnEliminar.addActionListener(e -> eliminarEst());
-    JButton btnLimpiar = crearBotonNativo("🧹 Limpiar Cajas", new Color(100, 100, 100));
+    JButton btnLimpiar = crearBotonNativo(" Limpiar Cajas", new Color(100, 100, 100));
     btnLimpiar.addActionListener(e -> limpiarFormEst());
 
     btnPanel.add(btnCrear); btnPanel.add(btnActualizar); btnPanel.add(btnEliminar); btnPanel.add(btnLimpiar);

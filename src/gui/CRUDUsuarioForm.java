@@ -92,7 +92,7 @@ public class CRUDUsuarioForm extends JFrame {
     JButton btnEliminar = crearBotonNativo(" Eliminar Usuario", new Color(140, 40, 40));
     btnEliminar.addActionListener(e -> eliminarRegistro());
     
-    JButton btnLimpiar = crearBotonNativo("🧹 Limpiar", new Color(100, 100, 100));
+    JButton btnLimpiar = crearBotonNativo(" Limpiar Cajas", new Color(100, 100, 100));
     btnLimpiar.addActionListener(e -> limpiarFormulario());
 
     btnPanel.add(btnCrear);

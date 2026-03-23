@@ -190,6 +190,26 @@ public class JugadorDAO implements GenericDAO<Jugador> {
     }
 
     /**
+     * Filtra jugadores por rango de edad y equipo.
+     */
+    public List<Jugador> filtrarPorEdad(int idEquipo, int edadMin, int edadMax) {
+        List<Jugador> lista = new ArrayList<>();
+        String sql = "SELECT * FROM JUGADOR WHERE id_equipo = ? " +
+                     "AND (MONTHS_BETWEEN(SYSDATE, fecha_nacimiento) / 12) BETWEEN ? AND ? " +
+                     "ORDER BY apellido, nombre";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idEquipo);
+            ps.setInt(2, edadMin);
+            ps.setInt(3, edadMax);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) lista.add(mapear(rs));
+        } catch (SQLException e) {
+            System.err.println("[JugadorDAO] Error filtrarPorEdad: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    /**
      * Reporte 7: Valor total de mercado de jugadores de equipos de una confederacion.
      */
     public double valorTotalPorConfederacion(int idConfederacion) {

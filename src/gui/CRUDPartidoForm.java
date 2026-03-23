@@ -110,7 +110,7 @@ public class CRUDPartidoForm extends JFrame {
     btnActualizar.addActionListener(e -> actualizarPar());
     JButton btnEliminar = crearBotonNativo(" Eliminar", new Color(140, 40, 40));
     btnEliminar.addActionListener(e -> eliminarPar());
-    JButton btnLimpiar = crearBotonNativo("🧹 Limpiar", new Color(100, 100, 100));
+    JButton btnLimpiar = crearBotonNativo("Limpiar", new Color(100, 100, 100));
     btnLimpiar.addActionListener(e -> limpiarFormPar());
 
     btnPanel.add(btnCrear); btnPanel.add(btnActualizar); btnPanel.add(btnEliminar); btnPanel.add(btnLimpiar);

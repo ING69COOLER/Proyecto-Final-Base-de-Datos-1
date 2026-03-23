@@ -63,13 +63,17 @@ public class CRUDJugadorForm extends JFrame {
     JPanel panelFiltro = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 15));
     panelFiltro.setOpaque(false);
     
-    JButton btnFiltro = crearBotonNativo("🔍 Filtro Físico (R.6)", new Color(200, 110, 30));
+    JButton btnFiltro = crearBotonNativo("Filtro Fisico", new Color(200, 110, 30));
     btnFiltro.addActionListener(e -> aplicarFiltro6());
+
+    JButton btnFiltroEdad = crearBotonNativo("Rango Edad", new Color(110, 30, 200));
+    btnFiltroEdad.addActionListener(e -> aplicarFiltroEdad());
     
-    JButton btnReset = crearBotonNativo("✖ Quitar Filtros", new Color(80, 80, 80));
+    JButton btnReset = crearBotonNativo("Restablecer Tabla", new Color(80, 80, 80));
     btnReset.addActionListener(e -> cargarDatos());
     
     panelFiltro.add(btnFiltro);
+    panelFiltro.add(btnFiltroEdad);
     panelFiltro.add(btnReset);
     panelNorte.add(panelFiltro, BorderLayout.EAST);
 
@@ -129,7 +133,7 @@ public class CRUDJugadorForm extends JFrame {
     JButton btnEliminar = crearBotonNativo(" Eliminar Selección", new Color(140, 40, 40));
     btnEliminar.addActionListener(e -> eliminarRegistro());
     
-    JButton btnLimpiar = crearBotonNativo("🧹 Limpiar Formulario", new Color(100, 100, 100));
+    JButton btnLimpiar = crearBotonNativo("Limpiar Formulario", new Color(100, 100, 100));
     btnLimpiar.addActionListener(e -> limpiarFormulario());
 
     btnPanel.add(btnCrear);
@@ -200,6 +204,47 @@ public class CRUDJugadorForm extends JFrame {
         JOptionPane.showMessageDialog(this, "Filtro aplicado con éxito. Viendo " + res.size() + " resultados.", "Filtro Exitoso", JOptionPane.INFORMATION_MESSAGE);
       } catch (Exception ex) {
          JOptionPane.showMessageDialog(this, "Excepción analizando valores numéricos.");
+      }
+    }
+  }
+
+  private void aplicarFiltroEdad() {
+    List<Equipo> eqs = equipoDAO.obtenerTodos();
+    JComboBox<Equipo> cmb = new JComboBox<>(eqs.toArray(new Equipo[0]));
+    JTextField edadMin=new JTextField("15"), edadMax=new JTextField("45");
+    
+    Object[] msg = {
+        "Selección:", cmb, " ", 
+        "Edad Mínima:", edadMin, 
+        "Edad Máxima:", edadMax
+    };
+
+    if (JOptionPane.showConfirmDialog(this, msg, "Filtro Etario por Equipo", JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION) {
+      try {
+        Equipo eq = (Equipo) cmb.getSelectedItem();
+        int min = Integer.parseInt(edadMin.getText());
+        int max = Integer.parseInt(edadMax.getText());
+        
+        List<Jugador> res = jugadorDAO.filtrarPorEdad(eq.getIdEquipo(), min, max);
+        
+        if (res.isEmpty()) { 
+          JOptionPane.showMessageDialog(this, "Nadie cumple con ese rango de edad en " + eq.getNombre(), "Vacío", JOptionPane.INFORMATION_MESSAGE); 
+          return; 
+        }
+        
+        modeloTabla.setRowCount(0);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        for (Jugador j : res) {
+          modeloTabla.addRow(new Object[]{
+            j.getIdJugador(), j.getNombre(), j.getApellido(),
+            j.getFechaNacimiento() != null ? sdf.format(j.getFechaNacimiento()) : "",
+            j.getPosicion(), j.getPeso(), j.getEstatura(), j.getValorMercado(), 
+            eq.getNombre(), j.getIdEquipo()
+          });
+        }
+        JOptionPane.showMessageDialog(this, "Se encontraron " + res.size() + " jugadores.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+      } catch (Exception ex) {
+         JOptionPane.showMessageDialog(this, "Error: Asegúrate de ingresar números enteros.");
       }
     }
   }

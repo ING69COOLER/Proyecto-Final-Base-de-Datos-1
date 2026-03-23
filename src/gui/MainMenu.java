@@ -22,7 +22,7 @@ public class MainMenu extends JFrame {
 
   public MainMenu() {
     bitacoraDAO = new BitacoraDAO();
-    setTitle("Sistema de Gestión - Copa Mundial de la FIFA 2026™");
+    setTitle("Sistema de Gestion - Copa Mundial de la FIFA 2026");
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     initComponents();
 

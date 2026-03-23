@@ -44,7 +44,7 @@ public class CRUDDTConfForm extends JFrame {
     JTabbedPane tabbedPane = new JTabbedPane();
     tabbedPane.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
-    tabbedPane.addTab("‍ Gestión de Directores Técnicos", crearPanelDT());
+    tabbedPane.addTab(" Gestion de Directores Tecnicos", crearPanelDT());
     tabbedPane.addTab(" Gestión de Confederaciones Mundiales", crearPanelConfederaciones());
 
     setContentPane(tabbedPane);
@@ -102,7 +102,7 @@ public class CRUDDTConfForm extends JFrame {
     btnActualizar.addActionListener(e -> actualizarDT());
     JButton btnEliminar = crearBotonNativo(" Eliminar", new Color(140, 40, 40));
     btnEliminar.addActionListener(e -> eliminarDT());
-    JButton btnLimpiar = crearBotonNativo("🧹 Limpiar", new Color(100, 100, 100));
+    JButton btnLimpiar = crearBotonNativo(" Limpiar", new Color(100, 100, 100));
     btnLimpiar.addActionListener(e -> limpiarFormDT());
 
     btnPanel.add(btnCrear); btnPanel.add(btnActualizar); btnPanel.add(btnEliminar); btnPanel.add(btnLimpiar);
