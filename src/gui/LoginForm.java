@@ -7,12 +7,9 @@ import security.SeguridadService;
 import security.SesionActual;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 
-/**
- * Ventana de Login del sistema Mundial de Futbol 2026.
- */
 public class LoginForm extends JFrame {
 
     private JTextField txtUsuario;
@@ -30,149 +27,185 @@ public class LoginForm extends JFrame {
     }
 
     private void initComponents() {
-        setTitle("Mundial de Fútbol 2026 - Iniciar Sesión");
+        setTitle("Mundial de Fútbol 2026 - Autenticación");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
-        setSize(420, 340);
+        setSize(750, 450);
         setLocationRelativeTo(null);
 
-        // Panel principal con fondo oscuro
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBackground(new Color(20, 25, 45));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
-        setContentPane(mainPanel);
+        // Contenedor principal dividido en dos mitades
+        JPanel mainContainer = new JPanel(new BorderLayout());
+        setContentPane(mainContainer);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(8, 0, 8, 0);
+        // ==========================================
+        // PANEL IZQUIERDO (Branding / Diseño Gráfico)
+        // ==========================================
+        JPanel leftPanel = new JPanel();
+        leftPanel.setBackground(new Color(25, 40, 80));
+        leftPanel.setLayout(new GridBagLayout());
+        leftPanel.setPreferredSize(new Dimension(350, 450));
 
-        // Titulo
-        JLabel lblTitulo = new JLabel("⚽ MUNDIAL 2026", SwingConstants.CENTER);
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        lblTitulo.setForeground(new Color(255, 200, 50));
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
-        mainPanel.add(lblTitulo, gbc);
+        GridBagConstraints gbcLeft = new GridBagConstraints();
+        gbcLeft.gridx = 0; gbcLeft.gridy = 0;
+        gbcLeft.insets = new Insets(10, 20, 10, 20);
 
-        JLabel lblSubtitulo = new JLabel("Sistema de Gestión", SwingConstants.CENTER);
-        lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        lblSubtitulo.setForeground(new Color(160, 170, 200));
-        gbc.gridy = 1;
-        mainPanel.add(lblSubtitulo, gbc);
+        JLabel lblFifa = new JLabel("FIFA WORLD CUP");
+        lblFifa.setFont(new Font("Segoe UI Black", Font.BOLD, 28));
+        lblFifa.setForeground(Color.WHITE);
+        leftPanel.add(lblFifa, gbcLeft);
 
-        // Separador
-        JSeparator sep = new JSeparator();
-        sep.setForeground(new Color(60, 70, 100));
-        gbc.gridy = 2;
-        mainPanel.add(sep, gbc);
+        gbcLeft.gridy++;
+        JLabel lblAnio = new JLabel("CANADA - MEXICO - USA");
+        lblAnio.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblAnio.setForeground(new Color(255, 204, 0));
+        leftPanel.add(lblAnio, gbcLeft);
 
-        // Campo usuario
-        gbc.gridwidth = 1; gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0.3;
-        JLabel lblU = new JLabel("Usuario:");
-        lblU.setForeground(Color.WHITE);
-        lblU.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        mainPanel.add(lblU, gbc);
+        gbcLeft.gridy++;
+        gbcLeft.insets = new Insets(30, 20, 10, 20);
+        JLabel lblDesc = new JLabel("<html><div style='text-align: center; color: #BBCCDD;'>Sistema Oficial de Gestión<br>Logística y Base de Datos<br>Universitaria</div></html>");
+        lblDesc.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        leftPanel.add(lblDesc, gbcLeft);
 
-        gbc.gridx = 1; gbc.weightx = 0.7;
-        txtUsuario = new JTextField(15);
+        // ==========================================
+        // PANEL DERECHO (Formulario de Login)
+        // ==========================================
+        JPanel rightPanel = new JPanel();
+        rightPanel.setBackground(new Color(245, 247, 250));
+        rightPanel.setLayout(new GridBagLayout());
+        
+        GridBagConstraints gbcRight = new GridBagConstraints();
+        gbcRight.fill = GridBagConstraints.HORIZONTAL;
+        gbcRight.insets = new Insets(10, 40, 5, 40);
+        gbcRight.weightx = 1.0;
+
+        // Saludo
+        gbcRight.gridx = 0; gbcRight.gridy = 0;
+        gbcRight.insets = new Insets(20, 40, 30, 40);
+        JLabel lblBienvenido = new JLabel("Iniciar Sesión", SwingConstants.LEFT);
+        lblBienvenido.setFont(new Font("Segoe UI", Font.BOLD, 26));
+        lblBienvenido.setForeground(new Color(30, 40, 60));
+        rightPanel.add(lblBienvenido, gbcRight);
+
+        // Campo Usuario
+        gbcRight.gridy = 1;
+        gbcRight.insets = new Insets(5, 40, 2, 40);
+        JLabel lblU = new JLabel("Nombre de Usuario");
+        lblU.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblU.setForeground(new Color(100, 110, 130));
+        rightPanel.add(lblU, gbcRight);
+
+        gbcRight.gridy = 2;
+        gbcRight.insets = new Insets(0, 40, 20, 40);
+        txtUsuario = new JTextField();
         estilizarCampo(txtUsuario);
-        mainPanel.add(txtUsuario, gbc);
+        rightPanel.add(txtUsuario, gbcRight);
 
-        // Campo password
-        gbc.gridx = 0; gbc.gridy = 4; gbc.weightx = 0.3;
-        JLabel lblP = new JLabel("Contraseña:");
-        lblP.setForeground(Color.WHITE);
-        lblP.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        mainPanel.add(lblP, gbc);
+        // Campo Contraseña
+        gbcRight.gridy = 3;
+        gbcRight.insets = new Insets(5, 40, 2, 40);
+        JLabel lblP = new JLabel("Contraseña de Acceso");
+        lblP.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblP.setForeground(new Color(100, 110, 130));
+        rightPanel.add(lblP, gbcRight);
 
-        gbc.gridx = 1; gbc.weightx = 0.7;
-        txtPassword = new JPasswordField(15);
+        gbcRight.gridy = 4;
+        gbcRight.insets = new Insets(0, 40, 10, 40);
+        txtPassword = new JPasswordField();
         estilizarCampo(txtPassword);
-        mainPanel.add(txtPassword, gbc);
+        rightPanel.add(txtPassword, gbcRight);
 
-        // Label error
-        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2;
-        lblError = new JLabel(" ");
-        lblError.setForeground(new Color(255, 80, 80));
-        lblError.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        lblError.setHorizontalAlignment(SwingConstants.CENTER);
-        mainPanel.add(lblError, gbc);
-
-        // Boton ingresar
-        gbc.gridy = 6;
-        btnIngresar = new JButton("INGRESAR");
-        btnIngresar.setBackground(new Color(50, 130, 220));
+        // Boton Entrar
+        gbcRight.gridy = 5;
+        gbcRight.insets = new Insets(20, 40, 10, 40);
+        btnIngresar = new JButton("Ingresar al Sistema");
+        btnIngresar.setUI(new javax.swing.plaf.basic.BasicButtonUI());
+        btnIngresar.setBackground(new Color(30, 100, 220));
         btnIngresar.setForeground(Color.WHITE);
         btnIngresar.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnIngresar.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        btnIngresar.setFocusPainted(false);
         btnIngresar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btnIngresar.addActionListener(this::validarCredenciales);
+        btnIngresar.setFocusPainted(false);
+        btnIngresar.setBorder(new EmptyBorder(12, 0, 12, 0));
+        btnIngresar.addActionListener(e -> validarCredenciales());
+        
+        // Efecto Hover Boton
+        btnIngresar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) { btnIngresar.setBackground(new Color(40, 120, 240)); }
+            public void mouseExited(java.awt.event.MouseEvent evt) { btnIngresar.setBackground(new Color(30, 100, 220)); }
+        });
 
-        // Enter key en password
-        txtPassword.addActionListener(this::validarCredenciales);
+        rightPanel.add(btnIngresar, gbcRight);
 
-        mainPanel.add(btnIngresar, gbc);
+        // Etiqueta Error
+        gbcRight.gridy = 6;
+        gbcRight.insets = new Insets(10, 40, 20, 40);
+        lblError = new JLabel(" ");
+        lblError.setForeground(new Color(220, 50, 50));
+        lblError.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lblError.setHorizontalAlignment(SwingConstants.CENTER);
+        rightPanel.add(lblError, gbcRight);
+
+        txtPassword.addActionListener(e -> validarCredenciales());
+
+        mainContainer.add(leftPanel, BorderLayout.WEST);
+        mainContainer.add(rightPanel, BorderLayout.CENTER);
     }
 
     private void estilizarCampo(JTextField campo) {
-        campo.setBackground(new Color(35, 40, 65));
-        campo.setForeground(Color.WHITE);
-        campo.setCaretColor(Color.WHITE);
-        campo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        campo.setBackground(Color.WHITE);
+        campo.setForeground(new Color(40, 40, 40));
+        campo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         campo.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(60, 80, 120)),
-            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+            BorderFactory.createLineBorder(new Color(200, 205, 215), 1, true),
+            BorderFactory.createEmptyBorder(10, 12, 10, 12)
         ));
     }
 
-    private void validarCredenciales(ActionEvent e) {
+    private void validarCredenciales() {
         String nombre = txtUsuario.getText().trim();
         String password = new String(txtPassword.getPassword());
 
         if (nombre.isEmpty() || password.isEmpty()) {
-            lblError.setText("Complete todos los campos.");
+            lblError.setText("Por favor, complete todos los campos requeridos.");
             return;
         }
 
-        Usuario usuario = usuarioDAO.obtenerPorNombre(nombre);
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            Usuario usuario = usuarioDAO.obtenerPorNombre(nombre);
 
-        if (usuario == null || !SeguridadService.verificarPassword(password, usuario.getContrasenaHash())) {
-            lblError.setText("Usuario o contraseña incorrectos.");
-            txtPassword.setText("");
-            return;
+            if (usuario == null || !SeguridadService.verificarPassword(password, usuario.getContrasenaHash())) {
+                lblError.setText("Credenciales inválidas. Intente nuevamente.");
+                txtPassword.setText("");
+            } else {
+                int idRegistro = bitacoraDAO.registrarIngreso(usuario.getIdUsuario());
+                SesionActual.iniciarSesion(usuario, idRegistro);
+
+                this.dispose();
+                SwingUtilities.invokeLater(() -> {
+                    new MainMenu().setVisible(true);
+                });
+            }
+        } finally {
+            setCursor(Cursor.getDefaultCursor());
         }
-
-        // Registrar ingreso en bitácora
-        int idRegistro = bitacoraDAO.registrarIngreso(usuario.getIdUsuario());
-        SesionActual.iniciarSesion(usuario, idRegistro);
-
-        // Abrir menú principal
-        this.dispose();
-        SwingUtilities.invokeLater(() -> {
-            MainMenu menu = new MainMenu();
-            menu.setVisible(true);
-        });
     }
 
     public static void main(String[] args) {
-        // Test rápido de conexión antes de abrir la UI
-        try {
-            db.ConexionOracle.getInstance().testConnection();
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null,
-                "Error de conexión a Oracle:\n" + ex.getMessage() +
-                "\n\nVerifica que Oracle esté corriendo y las credenciales\nen db/ConexionOracle.java sean correctas.",
-                "Error de Conexión", JOptionPane.ERROR_MESSAGE);
-            System.exit(1);
-        }
+        // Inicializar UI nativa
+        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } 
+        catch (Exception ignored) {}
 
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ignored) {}
+        // Test de Conexión Silenciosa en Hilo Secundario
+        new Thread(() -> {
+            try { db.ConexionOracle.getInstance().testConnection(); }
+            catch (Exception ex) {
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(null, 
+                        "Error Crítico BD:\n" + ex.getMessage(), "Fallo", JOptionPane.ERROR_MESSAGE);
+                });
+            }
+        }).start();
 
-        SwingUtilities.invokeLater(() -> {
-            LoginForm form = new LoginForm();
-            form.setVisible(true);
-        });
+        SwingUtilities.invokeLater(() -> new LoginForm().setVisible(true));
     }
 }

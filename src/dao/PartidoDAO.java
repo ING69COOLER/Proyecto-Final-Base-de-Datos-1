@@ -38,9 +38,7 @@ public class PartidoDAO implements GenericDAO<Partido> {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) return mapear(rs);
-        } catch (SQLException e) {
-            System.err.println("[PartidoDAO] Error obtenerPorId: " + e.getMessage());
-        }
+        } catch (SQLException e) {}
         return null;
     }
 
@@ -51,7 +49,7 @@ public class PartidoDAO implements GenericDAO<Partido> {
         try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) lista.add(mapear(rs));
         } catch (SQLException e) {
-            System.err.println("[PartidoDAO] Error obtenerTodos: " + e.getMessage());
+            e.printStackTrace();
         }
         return lista;
     }
@@ -67,10 +65,7 @@ public class PartidoDAO implements GenericDAO<Partido> {
             ps.setInt(5, p.getIdGrupo());
             ps.setInt(6, p.getIdPartido());
             return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("[PartidoDAO] Error actualizar: " + e.getMessage());
-            return false;
-        }
+        } catch (SQLException e) { return false; }
     }
 
     @Override
@@ -79,16 +74,9 @@ public class PartidoDAO implements GenericDAO<Partido> {
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
-        } catch (SQLException e) {
-            System.err.println("[PartidoDAO] Error eliminar: " + e.getMessage());
-            return false;
-        }
+        } catch (SQLException e) { return false; }
     }
 
-    /**
-     * Reporte 2: Partidos en un estadio especifico.
-     * Returns Object[] {id_partido, equipo_local, equipo_visitante, fecha_hora, nombre_estadio}
-     */
     public List<Object[]> obtenerPorEstadio(int idEstadio) {
         List<Object[]> result = new ArrayList<>();
         String sql = "SELECT p.id_partido, el.nombre AS local, ev.nombre AS visitante, " +
@@ -103,24 +91,14 @@ public class PartidoDAO implements GenericDAO<Partido> {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 result.add(new Object[]{
-                    rs.getInt("id_partido"),
-                    rs.getString("local"),
-                    rs.getString("visitante"),
-                    rs.getTimestamp("fecha_hora"),
-                    rs.getString("estadio")
+                    rs.getInt("id_partido"), rs.getString("local"), rs.getString("visitante"),
+                    rs.getTimestamp("fecha_hora"), rs.getString("estadio")
                 });
             }
-        } catch (SQLException e) {
-            System.err.println("[PartidoDAO] Error obtenerPorEstadio: " + e.getMessage());
-        }
+        } catch (SQLException e) {}
         return result;
     }
 
-    /**
-     * Reporte 8: Cantidad de partidos por equipo en cada pais anfitrion
-     * (excluyendo partidos de ese pais como local o visitante).
-     * Returns Object[] {equipo, pais, num_partidos}
-     */
     public List<Object[]> partidosPorEquipoPorPais() {
         List<Object[]> result = new ArrayList<>();
         String sql = "SELECT e.nombre AS equipo, pa.nombre AS pais, COUNT(*) AS num_partidos " +
@@ -139,9 +117,7 @@ public class PartidoDAO implements GenericDAO<Partido> {
             while (rs.next()) {
                 result.add(new Object[]{rs.getString("equipo"), rs.getString("pais"), rs.getInt("num_partidos")});
             }
-        } catch (SQLException e) {
-            System.err.println("[PartidoDAO] Error partidosPorEquipoPorPais: " + e.getMessage());
-        }
+        } catch (SQLException e) {}
         return result;
     }
 

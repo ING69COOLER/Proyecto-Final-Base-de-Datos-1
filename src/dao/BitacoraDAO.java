@@ -79,6 +79,32 @@ public class BitacoraDAO implements GenericDAO<Bitacora> {
         return lista;
     }
 
+    /**
+     * Reporte de Auditoría Integrado (Trae Nombre de Usuario).
+     */
+    public List<Object[]> obtenerAuditoria(java.util.Date inicio, java.util.Date fin) {
+        List<Object[]> lista = new ArrayList<>();
+        String sql = "SELECT b.id_registro, u.nombre_usuario, b.fecha_hora_ingreso, b.fecha_hora_salida " +
+                     "FROM BITACORA b JOIN USUARIO u ON b.id_usuario = u.id_usuario " +
+                     "WHERE b.fecha_hora_ingreso BETWEEN ? AND ? ORDER BY b.fecha_hora_ingreso DESC";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setTimestamp(1, new Timestamp(inicio.getTime()));
+            ps.setTimestamp(2, new Timestamp(fin.getTime()));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                lista.add(new Object[]{
+                    rs.getInt("id_registro"),
+                    rs.getString("nombre_usuario"),
+                    rs.getTimestamp("fecha_hora_ingreso"),
+                    rs.getTimestamp("fecha_hora_salida")
+                });
+            }
+        } catch (SQLException e) {
+            System.err.println("[BitacoraDAO] Error obtenerAuditoria: " + e.getMessage());
+        }
+        return lista;
+    }
+
     @Override
     public boolean crear(Bitacora b) {
         String sql = "INSERT INTO BITACORA (id_usuario, fecha_hora_ingreso, fecha_hora_salida) VALUES (?, ?, ?)";

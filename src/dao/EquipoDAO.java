@@ -103,17 +103,22 @@ public class EquipoDAO implements GenericDAO<Equipo> {
      */
     public List<Object[]> equipoMasCaroPorPaisAnfitrion() {
         List<Object[]> result = new ArrayList<>();
-        String sql = "SELECT pa.nombre AS pais, e.nombre AS equipo, e.valor_mercado " +
+        String sql = "SELECT pa.nombre AS pais, re.equipo, re.valor_mercado " +
                      "FROM PAISANFITRION pa " +
-                     "CROSS JOIN EQUIPO e " +
-                     "WHERE e.valor_mercado = (SELECT MAX(valor_mercado) FROM EQUIPO " +
-                     "                         WHERE id_confederacion = (" +
-                     "                             SELECT id_confederacion FROM CONFEDERACION " +
-                     "                             WHERE nombre = CASE pa.nombre " +
-                     "                               WHEN 'Mexico' THEN 'CONCACAF' " +
-                     "                               WHEN 'Estados Unidos' THEN 'CONCACAF' " +
-                     "                               WHEN 'Canada' THEN 'CONCACAF' " +
-                     "                               ELSE 'FIFA' END ))";
+                     "JOIN ( " +
+                     "    SELECT e.id_equipo, e.nombre AS equipo, e.valor_mercado, c.nombre AS conf_nombre," +
+                     "           ROW_NUMBER() OVER(PARTITION BY c.id_confederacion ORDER BY e.valor_mercado DESC) as rk " +
+                     "    FROM EQUIPO e " +
+                     "    JOIN CONFEDERACION c ON e.id_confederacion = c.id_confederacion " +
+                     ") re ON re.conf_nombre = ( " +
+                     "    CASE pa.nombre " +
+                     "        WHEN 'Mexico' THEN 'CONCACAF' " +
+                     "        WHEN 'USA' THEN 'CONCACAF' " +
+                     "        WHEN 'Canada' THEN 'CONCACAF' " +
+                     "        ELSE 'FIFA' " +
+                     "    END " +
+                     ") " +
+                     "WHERE re.rk = 1 ORDER BY pa.nombre";
                      
         // NOTA: Como el PDF pide "equipo mas caro de un pais anfitrion" y en nuestro 
         // ER los paises anfitriones no tienen directamente equipos (solo ciudades y estadios),
