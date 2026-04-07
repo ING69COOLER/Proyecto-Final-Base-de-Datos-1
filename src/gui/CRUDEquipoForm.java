@@ -46,7 +46,7 @@ public class CRUDEquipoForm extends JFrame {
     panelPrincipal.add(lblTitulo, BorderLayout.NORTH);
 
     // Tabla de datos
-    String[] columnas = {"ID", "País / Selección", "Ranking FIFA", "Valor Mercado Extra ($)", "Confederación", "ID Conf"};
+    String[] columnas = {"ID", "País / Selección", "Ranking FIFA", "Valor Mercado Jugadores ($)", "Confederación", "ID Conf"};
     modeloTabla = new DefaultTableModel(columnas, 0) {
       @Override
       public boolean isCellEditable(int row, int column) { return false; }
@@ -70,13 +70,15 @@ public class CRUDEquipoForm extends JFrame {
     txtNombre = new JTextField(); 
     txtRanking = new JTextField(); 
     txtValor = new JTextField();
+    txtValor.setEditable(false);
+    txtValor.setToolTipText("Se calcula automaticamente con la suma del valor de los jugadores del equipo.");
     cmbConfederacion = new JComboBox<>();
     cargarComboConfederacion();
 
     agregarCampo(formPanel, "ID (Auto):", txtId);
     agregarCampo(formPanel, "Nombre País / Selección:", txtNombre);
     agregarCampo(formPanel, "Ranking FIFA (1, 2, 3...):", txtRanking);
-    agregarCampo(formPanel, "Valor Plantilla USD ($):", txtValor);
+    agregarCampo(formPanel, "Valor Plantilla USD ($, auto):", txtValor);
     agregarCampo(formPanel, "Confederación Continental:", cmbConfederacion);
     
     // Rellenar las 2 celdas vacías (1 campo fantasma) para mantener cuadricula perfecta
@@ -167,7 +169,7 @@ public class CRUDEquipoForm extends JFrame {
   }
 
   private void limpiarFormulario() {
-    txtId.setText(""); txtNombre.setText(""); txtRanking.setText(""); txtValor.setText("");
+    txtId.setText(""); txtNombre.setText(""); txtRanking.setText(""); txtValor.setText("0.0");
     if (cmbConfederacion.getItemCount() > 0) cmbConfederacion.setSelectedIndex(0);
     tabla.clearSelection();
   }
@@ -224,7 +226,7 @@ public class CRUDEquipoForm extends JFrame {
     Equipo e = new Equipo();
     e.setNombre(txtNombre.getText().trim());
     e.setRankingFifa(Integer.parseInt(txtRanking.getText().trim()));
-    e.setValorMercado(Double.parseDouble(txtValor.getText().trim()));
+    e.setValorMercado(0);
     
     Confederacion c = (Confederacion) cmbConfederacion.getSelectedItem();
     if (c != null) {

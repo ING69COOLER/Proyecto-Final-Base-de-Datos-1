@@ -22,7 +22,7 @@ public class EquipoDAO implements GenericDAO<Equipo> {
             ps.setString(1, e.getNombre());
             ps.setInt(2, e.getRankingFifa());
             ps.setInt(3, e.getIdConfederacion());
-            ps.setDouble(4, e.getValorMercado());
+            ps.setDouble(4, 0);
             return ps.executeUpdate() > 0;
         } catch (SQLException ex) {
             System.err.println("[EquipoDAO] Error crear: " + ex.getMessage());
@@ -32,7 +32,9 @@ public class EquipoDAO implements GenericDAO<Equipo> {
 
     @Override
     public Equipo obtenerPorId(int id) {
-        String sql = "SELECT * FROM EQUIPO WHERE id_equipo = ?";
+        String sql = "SELECT e.id_equipo, e.nombre, e.ranking_fifa, e.id_confederacion, " +
+                     "NVL((SELECT SUM(j.valor_mercado) FROM JUGADOR j WHERE j.id_equipo = e.id_equipo), 0) AS valor_mercado " +
+                     "FROM EQUIPO e WHERE e.id_equipo = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
@@ -46,7 +48,9 @@ public class EquipoDAO implements GenericDAO<Equipo> {
     @Override
     public List<Equipo> obtenerTodos() {
         List<Equipo> lista = new ArrayList<>();
-        String sql = "SELECT * FROM EQUIPO ORDER BY nombre";
+        String sql = "SELECT e.id_equipo, e.nombre, e.ranking_fifa, e.id_confederacion, " +
+                     "NVL((SELECT SUM(j.valor_mercado) FROM JUGADOR j WHERE j.id_equipo = e.id_equipo), 0) AS valor_mercado " +
+                     "FROM EQUIPO e ORDER BY e.nombre";
         try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) lista.add(mapear(rs));
         } catch (SQLException ex) {
@@ -57,14 +61,17 @@ public class EquipoDAO implements GenericDAO<Equipo> {
 
     @Override
     public boolean actualizar(Equipo e) {
-        String sql = "UPDATE EQUIPO SET nombre=?, ranking_fifa=?, id_confederacion=?, valor_mercado=? WHERE id_equipo=?";
+        String sql = "UPDATE EQUIPO SET nombre=?, ranking_fifa=?, id_confederacion=? WHERE id_equipo=?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, e.getNombre());
             ps.setInt(2, e.getRankingFifa());
             ps.setInt(3, e.getIdConfederacion());
-            ps.setDouble(4, e.getValorMercado());
-            ps.setInt(5, e.getIdEquipo());
-            return ps.executeUpdate() > 0;
+            ps.setInt(4, e.getIdEquipo());
+            boolean actualizado = ps.executeUpdate() > 0;
+            if (actualizado) {
+                actualizarValorMercadoCalculado(e.getIdEquipo());
+            }
+            return actualizado;
         } catch (SQLException ex) {
             System.err.println("[EquipoDAO] Error actualizar: " + ex.getMessage());
             return false;
@@ -93,6 +100,18 @@ public class EquipoDAO implements GenericDAO<Equipo> {
         return e;
     }
 
+    public void actualizarValorMercadoCalculado(int idEquipo) {
+        String sql = "UPDATE EQUIPO e SET e.valor_mercado = (" +
+                     "    SELECT NVL(SUM(j.valor_mercado), 0) FROM JUGADOR j WHERE j.id_equipo = e.id_equipo" +
+                     ") WHERE e.id_equipo = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idEquipo);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            System.err.println("[EquipoDAO] Error actualizarValorMercadoCalculado: " + ex.getMessage());
+        }
+    }
+
     // ===========================================
     // REPORTES ESPECIALES
     // ===========================================
@@ -106,8 +125,10 @@ public class EquipoDAO implements GenericDAO<Equipo> {
         String sql = "SELECT pa.nombre AS pais, re.equipo, re.valor_mercado " +
                      "FROM PAISANFITRION pa " +
                      "JOIN ( " +
-                     "    SELECT e.id_equipo, e.nombre AS equipo, e.valor_mercado, c.nombre AS conf_nombre," +
-                     "           ROW_NUMBER() OVER(PARTITION BY c.id_confederacion ORDER BY e.valor_mercado DESC) as rk " +
+                     "    SELECT e.id_equipo, e.nombre AS equipo, " +
+                     "           NVL((SELECT SUM(j.valor_mercado) FROM JUGADOR j WHERE j.id_equipo = e.id_equipo), 0) AS valor_mercado, " +
+                     "           c.nombre AS conf_nombre, " +
+                     "           ROW_NUMBER() OVER(PARTITION BY c.id_confederacion ORDER BY NVL((SELECT SUM(j.valor_mercado) FROM JUGADOR j WHERE j.id_equipo = e.id_equipo), 0) DESC) as rk " +
                      "    FROM EQUIPO e " +
                      "    JOIN CONFEDERACION c ON e.id_confederacion = c.id_confederacion " +
                      ") re ON re.conf_nombre = ( " +

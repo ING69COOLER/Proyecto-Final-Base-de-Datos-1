@@ -20,7 +20,7 @@ public class ConexionOracle {
     // NO usar el formato antiguo @host:port:SID
     private static final String URL      = "jdbc:oracle:thin:@//" + HOST + ":" + PORT + "/XEPDB1";
     private static final String USER     = "MUNDIAL2026";  // Crea este usuario en XEPDB1
-    private static final String PASSWORD = "Mundial2026";  // Cambia por tu contraseña
+    private static final String PASSWORD = "Mundial2026";  // Debe coincidir con 00_setup_oracle21c.sql
 
     private static ConexionOracle instance;
     private Connection connection;

@@ -18,10 +18,12 @@ public class JugadorDAO implements GenericDAO<Jugador> {
 
     // Variable encargada de retener el túnel de conexión abierto con Oracle
     private Connection conn;
+    private EquipoDAO equipoDAO;
 
     public JugadorDAO() {
         // Se obtiene una conexión única protegida por el Patrón Singleton
         this.conn = ConexionOracle.getInstance().getConnection();
+        this.equipoDAO = new EquipoDAO();
     }
 
     /**
@@ -44,7 +46,11 @@ public class JugadorDAO implements GenericDAO<Jugador> {
             ps.setDouble(6, j.getEstatura());
             ps.setDouble(7, j.getValorMercado());
             ps.setInt(8, j.getIdEquipo());
-            return ps.executeUpdate() > 0;
+            boolean creado = ps.executeUpdate() > 0;
+            if (creado) {
+                equipoDAO.actualizarValorMercadoCalculado(j.getIdEquipo());
+            }
+            return creado;
         } catch (SQLException e) {
             System.err.println("[JugadorDAO] Error crear: " + e.getMessage());
             return false;
@@ -88,6 +94,7 @@ public class JugadorDAO implements GenericDAO<Jugador> {
 
     @Override
     public boolean actualizar(Jugador j) {
+        Jugador anterior = obtenerPorId(j.getIdJugador());
         String sql = "UPDATE JUGADOR SET nombre=?, apellido=?, fecha_nacimiento=?, posicion=?, " +
                      "peso=?, estatura=?, valor_mercado=?, id_equipo=? WHERE id_jugador=?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -100,7 +107,14 @@ public class JugadorDAO implements GenericDAO<Jugador> {
             ps.setDouble(7, j.getValorMercado());
             ps.setInt(8, j.getIdEquipo());
             ps.setInt(9, j.getIdJugador());
-            return ps.executeUpdate() > 0;
+            boolean actualizado = ps.executeUpdate() > 0;
+            if (actualizado) {
+                if (anterior != null) {
+                    equipoDAO.actualizarValorMercadoCalculado(anterior.getIdEquipo());
+                }
+                equipoDAO.actualizarValorMercadoCalculado(j.getIdEquipo());
+            }
+            return actualizado;
         } catch (SQLException e) {
             System.err.println("[JugadorDAO] Error actualizar: " + e.getMessage());
             return false;
@@ -109,10 +123,15 @@ public class JugadorDAO implements GenericDAO<Jugador> {
 
     @Override
     public boolean eliminar(int id) {
+        Jugador anterior = obtenerPorId(id);
         String sql = "DELETE FROM JUGADOR WHERE id_jugador = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
+            boolean eliminado = ps.executeUpdate() > 0;
+            if (eliminado && anterior != null) {
+                equipoDAO.actualizarValorMercadoCalculado(anterior.getIdEquipo());
+            }
+            return eliminado;
         } catch (SQLException e) {
             System.err.println("[JugadorDAO] Error eliminar: " + e.getMessage());
             return false;
